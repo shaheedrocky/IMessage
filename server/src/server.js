@@ -6,6 +6,7 @@ import dns from "dns";
 import { clerkMiddleware } from "@clerk/express";
 import fs from "fs";
 import path from "path";
+import { job } from "./lib/cron.js";
 
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
 const app = express();
@@ -29,4 +30,8 @@ if (fs.existsSync(publicDir)) {
 app.listen(PORT, () => {
   connectDB();
   console.log(`Server is listening on ${PORT} port 😊`);
+  if (process.env.NODE_ENV === 'production') {
+    job.start()
+  }
+  
 });
