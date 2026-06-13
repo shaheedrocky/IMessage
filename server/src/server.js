@@ -20,6 +20,10 @@ app.use(express.json());
 app.use(cors({ origin: FRONTEND_URL, credentials: true }));
 app.use(clerkMiddleware());
 
+app.get("/health", (req, res) => {
+  res.status(200).json({ ok: true });
+});
+
 if (fs.existsSync(publicDir)) {
   app.use(express.static(publicDir));
   app.get("/{*any}", (req, res, next) => {
