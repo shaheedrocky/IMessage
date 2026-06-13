@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/server.js",
-    "build": "rimraf dist && xcopy src dist\\src /E /I /Y",
+    "build": "rimraf dist && mkdir -p dist/src && cp -R src/* dist/src/",
     "start": "node src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
