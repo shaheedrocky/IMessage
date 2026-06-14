@@ -1,4 +1,5 @@
 import { hasImageKitConfig, uploadChatMedia } from "../lib/imagekit.js";
+import { getRecieverSocketId, io } from "../lib/socket.js";
 import { Message } from "../models/message.model.js";
 import { User } from "../models/user.model.js";
 
@@ -131,7 +132,13 @@ export async function sendMessage(req, res) {
 
     await newMessage.save();
 
-    res.status(201).json(newMessage);
+    const receiverSocketId = getRecieverSocketId(recieverId);
+
+    if(receiverSocketId){
+        io.to(receiverSocketId).emit("newMessage", newMessage)
+    }
+
+    res.status(201).json(newMessage); 
   } catch (error) {
     console.error("Error in sendMessage controller:", error.message);
     res.status(500).json({ message: error.message || "Internal server error" });

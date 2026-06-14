@@ -10,6 +10,7 @@ import { job } from "./lib/cron.js";
 import clerkWebhook from './webhooks/clerk.webhook.js'
 import authRoutes from './routes/auth.route.js'
 import messageRoutes from './routes/message.route.js'
+import { server } from "./lib/socket.js";
 
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
 const app = express();
@@ -38,7 +39,7 @@ if (fs.existsSync(publicDir)) {
   });
 }
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   connectDB();
   console.log(`Server is listening on ${PORT} port 😊`);
   if (process.env.NODE_ENV === 'production') {
