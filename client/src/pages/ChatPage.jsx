@@ -1,9 +1,15 @@
-import React from 'react'
+import React from "react";
+import toast from "react-hot-toast";
 
 const ChatPage = () => {
-  return (
-    <div>ChatPage</div>
-  )
-}
+  const notify = () => toast.success('Successfully created!');
 
-export default ChatPage
+
+  return (
+    <div>
+      <button onClick={notify}>Make me a toast</button>
+    </div>
+  );
+};
+
+export default ChatPage;
