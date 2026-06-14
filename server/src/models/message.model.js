@@ -18,9 +18,12 @@ const messageSchema = new mongoose.Schema(
     image: {
       type: String,
     },
-    video:{
-        type: String,
-    }
+    video: {
+      type: String,
+    },
+    pdf: {
+      type: String,
+    },
   },
   {
     timestamps: true,
