@@ -4,7 +4,7 @@ import { Server } from "socket.io";
 
 const app = express();
 const server = http.createServer(app);
-const allowed_origin = process.env.FRONTEND_URL || "http:localhost:5173";
+const allowed_origin = process.env.FRONTEND_URL || "http://localhost:5173";
 const io = new Server(server, { cors: { origin: [allowed_origin] } });
 
 function getRecieverSocketId(userId) {
@@ -20,6 +20,15 @@ io.on("connection", (socket) => {
   }
 
   io.emit("getOnlineUsers", Object.keys(userSocketMap));
+
+  socket.on("typing", ({ receiverId, isTyping }) => {
+    if (userId && receiverId) {
+      const receiverSocketId = getRecieverSocketId(receiverId);
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("typing", { senderId: userId, isTyping });
+      }
+    }
+  });
 
   socket.on("disconnect", () => {
     if (userId) delete userSocketMap[userId];

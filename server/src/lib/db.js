@@ -1,4 +1,12 @@
 import mongoose from "mongoose";
+import dns from "node:dns";
+
+// Force Node.js to use Google and Cloudflare DNS to reliably resolve MongoDB Atlas SRV records
+try {
+  dns.setServers(["8.8.8.8", "1.1.1.1"]);
+} catch (dnsErr) {
+  console.warn("Failed to set custom DNS servers, falling back to system default:", dnsErr.message);
+}
 
 async function connectDB() {
     try {

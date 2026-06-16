@@ -4,19 +4,16 @@ import { Message } from "../models/message.model.js";
 import { User } from "../models/user.model.js";
 
 export async function getUsersForSideBar(req, res) {
+  console.log('---- hitted ---');
+  
   try {
     const loggedUserId = req.user._id;
     const filteredUsers = await User.find({
       _id: { $ne: loggedUserId },
     }).select("-clerkId");
-
-    res.status(200).json({
-      message:
-        filteredUsers.length > 0
-          ? "Users listed successfully"
-          : "There is no users to list",
-      data: filteredUsers,
-    });
+    console.log('---- ',  filteredUsers);
+    
+    res.status(200).json(filteredUsers);
   } catch (error) {
     console.log("Error from getUsersForSideBar controller: ", error.message);
     res.status(200).json({
@@ -29,22 +26,24 @@ export async function getConversationForSideBar(req, res) {
   try {
     const loggedUserId = req.user._id;
 
-    const filteredMessages = await Message.aggregate([
+    const filteredConversations = await Message.aggregate([
       {
         $match: {
           $or: [{ senderId: loggedUserId }, { receiverId: loggedUserId }],
         },
       },
+      { $sort: { createdAt: -1 } },
       {
         $group: {
           _id: {
             $cond: [
-              { $eq: ["$senderId", loggedInUserId] },
+              { $eq: ["$senderId", loggedUserId] },
               "$receiverId",
               "$senderId",
             ],
           },
-          lastMessageAt: { $max: "$createdAt" },
+          lastMessage: { $first: "$$ROOT" },
+          lastMessageAt: { $first: "$createdAt" },
         },
       },
       { $sort: { lastMessageAt: -1 } },
@@ -56,11 +55,26 @@ export async function getConversationForSideBar(req, res) {
           as: "user",
         },
       },
-      // 5. Pull that profile out of the array and make it the document.
-      { $replaceRoot: { newRoot: { $first: "$user" } } },
-      // 6. Hide the private clerkId field from the result.
-      { $project: { clerkId: 0 } },
+      { $unwind: "$user" },
+      {
+        $project: {
+          _id: "$user._id",
+          fullName: "$user.fullName",
+          email: "$user.email",
+          profilePic: "$user.profilePic",
+          lastMessage: {
+            text: "$lastMessage.text",
+            image: "$lastMessage.image",
+            video: "$lastMessage.video",
+            pdf: "$lastMessage.pdf",
+            senderId: "$lastMessage.senderId",
+            createdAt: "$lastMessage.createdAt",
+          },
+        },
+      },
     ]);
+
+    res.status(200).json(filteredConversations);
   } catch (error) {
     console.error(
       "Error in getConversationForSideBar controller:",
@@ -99,15 +113,16 @@ export async function sendMessage(req, res) {
   try {
     const senderId = req.user._id;
     const { text } = req.body;
-    const { id: recieverId } = req.params;
+    const { id:receiverId } = req.params;
 
     let imageUrl;
     let videoUrl;
     let pdfUrl;
 
     if (req.file) {
-      if (!hasImageKitConfig) {
+      if (!hasImageKitConfig()) {
         res.status(500).json({ message: "Media upload is not configured" });
+        return;
       }
 
       const uploadedFileUrl = await uploadChatMedia(req.file);
@@ -132,7 +147,7 @@ export async function sendMessage(req, res) {
 
     await newMessage.save();
 
-    const receiverSocketId = getRecieverSocketId(recieverId);
+    const receiverSocketId = getRecieverSocketId(receiverId);
 
     if(receiverSocketId){
         io.to(receiverSocketId).emit("newMessage", newMessage)

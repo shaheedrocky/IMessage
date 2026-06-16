@@ -11,7 +11,7 @@ export const upload = multer({
     const isPdf = file.mimetype === "application/pdf";
 
     if (!isImage && !isVideo && !isPdf) {
-      cb(new Error("Only image, pdf and video only accepted"));
+      return cb(new Error("Only image, pdf and video only accepted"));
     }
 
     cb(null, true)

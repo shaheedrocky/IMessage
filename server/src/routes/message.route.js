@@ -10,6 +10,6 @@ route.use(protectedRoute);
 route.get('/users', getUsersForSideBar);
 route.get('/conversations', getConversationForSideBar);
 route.get('/:id', getMessages);
-route.post('send/:id',upload.single("media"), sendMessage);
+route.post('/send/:id',upload.single("media"), sendMessage);
 
 export default route

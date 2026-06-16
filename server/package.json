@@ -7,6 +7,7 @@
     "dev": "nodemon src/server.js",
     "build": "rimraf dist && mkdir -p dist/src && cp -R src/* dist/src/",
     "start": "node src/server.js",
+    "db:seed":"node src/seeds/user.seed.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "type": "module",
